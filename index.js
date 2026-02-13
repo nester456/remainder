@@ -253,3 +253,4 @@ waClient.initialize();
   }, new NewMessage({}));
 
 })();
+console.log("FORCE REDEPLOY 2026-02-13 QR-FIX");
