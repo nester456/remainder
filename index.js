@@ -106,8 +106,11 @@ const waClient = new Client({
   }
 });
 
+const qrcode = require("qrcode-terminal");
+
 waClient.on("qr", qr => {
-  console.log("Scan QR for WhatsApp");
+  console.log("=== WHATSAPP QR CODE ===");
+  qrcode.generate(qr, { small: true });
 });
 
 waClient.on("ready", () => {
