@@ -1,3 +1,7 @@
+const QRCode = require("qrcode");
+const fs = require("fs");
+const path = require("path");
+
 require("dotenv").config();
 const { Client } = require("whatsapp-web.js");
 const { TelegramClient } = require("telegram");
@@ -100,9 +104,37 @@ async function sendReminder(text) {
 // 🟢 WHATSAPP CLIENT
 //////////////////////////////////////////////////
 
-const waClient = new Client({
-  puppeteer: {
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+waClient.on("qr", async qr => {
+  try {
+    const qrPath = path.join(__dirname, "whatsapp-qr.png");
+
+    // Генеруємо PNG
+    await QRCode.toFile(qrPath, qr, {
+      width: 400,
+      margin: 2
+    });
+
+    console.log("WhatsApp QR saved as image");
+
+    // Надсилаємо в Telegram
+    const formData = new (require("form-data"))();
+    formData.append("chat_id", TELEGRAM_REMINDER_CHANNEL);
+    formData.append("photo", fs.createReadStream(qrPath));
+    formData.append(
+      "caption",
+      "📲 Підключення WhatsApp\n\nВідскануйте QR-код у WhatsApp → Повʼязані пристрої"
+    );
+
+    await axios.post(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,
+      formData,
+      { headers: formData.getHeaders() }
+    );
+
+    console.log("WhatsApp QR sent to Telegram");
+
+  } catch (err) {
+    console.error("QR send error:", err.message);
   }
 });
 
